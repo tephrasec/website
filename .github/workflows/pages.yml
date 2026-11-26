@@ -1,8 +1,10 @@
-# Builds the site and deploys it to GitHub Pages. The rules page is generated
-# from tephrasec/tephra's main branch, so the build also runs once a day.
+# Builds the site on every pull request (the "build" check main requires) and
+# deploys it to GitHub Pages from main. The rules page is generated from
+# tephrasec/tephra's main branch, so the deploy also runs once a day.
 name: Pages
 
 on:
+  pull_request:
   push:
     branches: [main]
   schedule:
@@ -13,8 +15,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   HUGO_VERSION: 0.170.1
@@ -51,14 +53,19 @@ jobs:
           sudo apt-get install -y --no-install-recommends python3-yaml
           python3 scripts/rules.py tephra
       - id: pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - name: Build
-        run: hugo --gc --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+        env:
+          BASE_URL: ${{ steps.pages.outputs.base_url || 'https://tephrasec.tech' }}
+        run: hugo --gc --minify --baseURL "$BASE_URL/"
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        if: github.event_name != 'pull_request'
         with:
           path: public
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-24.04
     permissions:
