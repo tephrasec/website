@@ -132,7 +132,7 @@ h2 { font-size: clamp(28px, 3.6vw, 38px); letter-spacing: -.025em; margin: 8px 0
 .term .c { color: #78716c; } .term .r { color: #f87171; } .term .o { color: var(--amber); } .term .g { color: #86efac; }
 
 /* stats */
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
 .stat { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; color: inherit; transition: transform .2s, border-color .2s; }
 .stat:hover { transform: translateY(-4px); border-color: var(--orange); }
 .stat b { display: block; font-size: 44px; letter-spacing: -.03em; font-weight: 800; line-height: 1.1; margin-bottom: 6px; }
@@ -234,26 +234,30 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
     </div>
     <div class="panel" role="tabpanel">
       <div data-p="0"><h3>The kill is recorded</h3><p>A signal to the agent goes to a ring buffer that nothing else writes to, so a flood cannot push it out. The next agent raises R030 with the sender and its pod.</p>
-        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">example output</span></div><pre><span class="c"># attacker, in a pod with the host's PIDs</span>
-$ kill -9 $(pidof tephrad)
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">lab, 5.15, 26 Nov</span></div><pre><span class="c"># E19: an attacker in a pod that sees the node's processes</span>
+$ kill -9 16659
 
-<span class="c"># the next agent, seconds later</span>
-<span class="r">R030</span> critical  signal to the Tephra agent
-     sender: /bin/busybox kill -9 3121
-     pod:    shop/web-7c9d8-xk2lp</pre></div></div>
+<span class="r">R030</span> critical  Signal sent to the Tephra agent
+     SIGKILL from /bin/sh (sh -s)
+     pod: tephra-e19-838ddf/victim</pre></div></div>
       <div data-p="1" hidden><h3>The kernel keeps recording</h3><p>The detection programs and their buffer are pinned in the kernel. While no agent runs they keep recording, and the next agent reads what happened meanwhile. A stop by Kubernetes removes the pins: an upgrade leaves nothing behind.</p>
-        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">example output</span></div><pre><span class="c"># agent killed at 12:00:03, back at 12:00:14</span>
-<span class="o">replayed</span>  4 records from while it was down
-<span class="o">alert</span>     R005 /etc/shadow read  12:00:06  dd</pre></div></div>
-      <div data-p="2" hidden><h3>The next move is refused</h3><p>Once the agent is gone, stopped or silent for 12 seconds, the kernel refuses a short list of moves in every pod: reading <code>/etc/shadow</code>, writing <code>ld.so.preload</code> or <code>authorized_keys</code>, loading a module, mounting, ptrace, running a deleted binary. Each refusal raises R038 when the agent is back.</p>
-        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">example output</span></div><pre>$ dd if=/etc/shadow of=/dev/null
-<span class="r">dd: failed to open '/etc/shadow': Operation not permitted</span>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">lab, 5.15, 26 Nov</span></div><pre><span class="c"># agent killed at 12:49:35; the read, 5 s later</span>
+$ dd if=/etc/shadow of=/dev/null
 
-<span class="r">R038</span> critical  refused while the sensor was blind
-     file_read /etc/shadow  by /bin/dd</pre></div></div>
+<span class="o">R005</span> high  /etc/shadow opened  12:49:40
+     /bin/dd  pod: tephra-e19-838ddf/victim</pre></div></div>
+      <div data-p="2" hidden><h3>The next move is refused</h3><p>Once the agent is gone, stopped or silent for 12 seconds, the kernel refuses a short list of moves in every pod: reading <code>/etc/shadow</code>, writing <code>ld.so.preload</code> or <code>authorized_keys</code>, loading a module, mounting, ptrace, running a deleted binary. Each refusal raises R038 when the agent is back.</p>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">lab, 5.15, 26 Nov</span></div><pre><span class="c"># E07: kill the agent, then at once</span>
+$ cat /etc/shadow
+
+<span class="r">R038</span> critical  Action refused while the sensor was blind
+     file_read /etc/shadow  by /bin/cat  denied
+     pod: tephra-e07-eeca6c/victim</pre></div></div>
       <div data-p="3" hidden><h3>A flood leaves counts, not gaps</h3><p>Under pressure the kernel sends the first open of each file by each program in each pod, and counts the rest. A flood can no longer push the one record that matters out of the buffer.</p>
-        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">example output</span></div><pre><span class="g">file_summary</span>  /etc/shadow  by /bin/cat  in shop/web
-              <span class="o">count 54,812</span>  12:00:01 → 12:00:11</pre></div></div>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">kernel test, 5.15</span></div><pre><span class="c"># 1,000 opens of one file with the buffer half full</span>
+<span class="g">records sent</span>   56
+<span class="o">counted</span>        545 + 399
+<span class="g">lost</span>           0</pre></div></div>
     </div>
   </div>
 </div></section>
@@ -262,6 +266,7 @@ $ kill -9 $(pidof tephrad)
   <div class="reveal"><span class="kicker">Measured, not claimed</span><h2>Results from the lab</h2>
   <p class="sub">Linux 5.15, the oldest kernel Tephra supports. Each number links to its run.</p></div>
   <div class="stats">
+    <a class="stat reveal" href="{{ "results/" | relURL }}"><b class="grad">4 / 4</b><span>attacks that kill the agent first, caught; the read in E07 and E14 refused</span><em>See the run →</em></a>
     <a class="stat reveal" href="{{ "results/" | relURL }}"><b class="grad">22 / 22</b><span>attack scenarios detected</span><em>See the run →</em></a>
     <a class="stat reveal" href="{{ "results/" | relURL }}"><b class="grad">−2.3%</b><span>HTTP cost, a new connection per request, best case (was −16.7%)</span><em>What it measures →</em></a>
     <a class="stat reveal" href="{{ "rules/" | relURL }}"><b class="grad">{{ len hugo.Data.rules }}</b><span>detection rules, each tested on recorded events</span><em>Browse the rules →</em></a>
