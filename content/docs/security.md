@@ -1,4 +1,5 @@
 ---
+description: "How to report a vulnerability in Tephra privately."
 title: Reporting a vulnerability
 weight: 9
 ---

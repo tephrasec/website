@@ -1,4 +1,5 @@
 ---
+description: "Lab results for Tephra: attack scenarios, held-out evasions and measured cost, with what each result proves and what it does not."
 title: Results
 ---
 

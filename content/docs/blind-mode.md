@@ -1,4 +1,5 @@
 ---
+description: "Blind mode: while the Tephra agent is killed, frozen or flooded, the kernel refuses the attacker moves that usually come next."
 title: Blind mode
 weight: 2
 ---

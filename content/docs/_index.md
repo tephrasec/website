@@ -1,4 +1,5 @@
 ---
+description: "How Tephra detects attacks in Kubernetes from the kernel with eBPF, refuses them with BPF LSM, and keeps refusing while the sensor is blinded."
 title: Documentation
 weight: 1
 ---

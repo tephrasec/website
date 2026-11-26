@@ -5,9 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ .Site.Title }}: eBPF runtime security for Kubernetes</title>
 <meta name="description" content="{{ .Site.Params.description }}">
-<meta property="og:title" content="Tephra">
+<link rel="canonical" href="{{ .Permalink }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tephra">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:title" content="Tephra: eBPF runtime security for Kubernetes">
 <meta property="og:description" content="{{ .Site.Params.description }}">
-<meta property="og:image" content="{{ "images/logo.png" | absURL }}">
+<meta property="og:image" content="{{ "images/social-card.png" | absURL }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Tephra: eBPF runtime security for Kubernetes that stays on guard when someone tries to blind it.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tephra: eBPF runtime security for Kubernetes">
+<meta name="twitter:description" content="{{ .Site.Params.description }}">
+<meta name="twitter:image" content="{{ "images/social-card.png" | absURL }}">
+<meta name="theme-color" content="#0c0a09">
+<script type="application/ld+json">
+{{ dict
+  "@context" "https://schema.org"
+  "@type" "SoftwareApplication"
+  "name" "Tephra"
+  "url" .Permalink
+  "description" .Site.Params.description
+  "applicationCategory" "SecurityApplication"
+  "operatingSystem" "Linux"
+  "license" "https://www.apache.org/licenses/LICENSE-2.0"
+  "codeRepository" "https://github.com/tephrasec/tephra"
+  "offers" (dict "@type" "Offer" "price" "0" "priceCurrency" "USD")
+  | jsonify | safeJS }}
+</script>
 <link rel="icon" href="{{ "favicon.svg" | relURL }}" type="image/svg+xml">
 <link rel="icon" href="{{ "favicon-32.png" | relURL }}" sizes="32x32">
 <link rel="apple-touch-icon" href="{{ "apple-touch-icon.png" | relURL }}">

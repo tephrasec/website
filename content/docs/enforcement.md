@@ -1,4 +1,5 @@
 ---
+description: "Blocking rules in Tephra: refusing attacks in the kernel with BPF LSM, per pod, starting in dry-run."
 title: Enforcement
 weight: 3
 ---
