@@ -2,6 +2,8 @@ baseURL = "https://tephrasec.tech/"
 locale = "en"
 title = "Tephra"
 enableRobotsTXT = true
+# No tag or category pages: they would be empty and only thin out the sitemap.
+disableKinds = ["taxonomy", "term"]
 enableGitInfo = false
 
 [module]
@@ -45,6 +47,8 @@ enableGitInfo = false
 
 [params]
   description = "eBPF runtime security for Kubernetes that stays on guard when someone tries to blind it."
+  # The share card on social sites and in search results.
+  images = ["images/social-card.png"]
   [params.navbar]
     displayTitle = true
     displayLogo = true

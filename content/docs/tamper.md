@@ -1,4 +1,5 @@
 ---
+description: "What Tephra records when its agent is killed, frozen or stopped outside Kubernetes, and what a planned stop looks like."
 title: When the agent is stopped
 weight: 4
 ---

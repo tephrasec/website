@@ -1,4 +1,5 @@
 ---
+description: "Requirements and installation of Tephra, the eBPF runtime security sensor for Kubernetes, with Helm."
 title: Getting started
 weight: 1
 ---
