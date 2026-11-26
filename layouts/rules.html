@@ -13,8 +13,8 @@
           </div>
         </div>
         <div class="rules-list">
-          {{ range .Site.Data.rules }}
-          <details class="rule" data-level="{{ .level }}" data-text="{{ lower (printf "%s %s %s %s" .id .title (delimit .tactics " ") (delimit .techniques " ")) }}">
+          {{ range hugo.Data.rules }}
+          <details class="rule" name="rule" data-level="{{ .level }}" data-text="{{ lower (printf "%s %s %s %s" .id .title (delimit .tactics " ") (delimit .techniques " ")) }}">
             <summary>
               <span class="rule-id">{{ .id }}</span>
               <span class="rule-title">{{ .title }}</span>
@@ -49,6 +49,14 @@
         document.getElementById('rules-none').hidden = shown > 0;
       }
       q.addEventListener('input', apply);
+      // One rule open at a time. Browsers that know <details name> do this
+      // themselves; this covers the rest.
+      document.querySelectorAll('.rule').forEach(function (r) {
+        r.addEventListener('toggle', function () {
+          if (!r.open) return;
+          document.querySelectorAll('.rule[open]').forEach(function (o) { if (o !== r) o.open = false; });
+        });
+      });
       document.querySelectorAll('.rules-levels button').forEach(function (b) {
         b.addEventListener('click', function () {
           level = b.dataset.level;

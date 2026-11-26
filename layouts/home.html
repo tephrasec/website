@@ -14,39 +14,50 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
+:root, html.dark {
   --bg: #0c0a09; --bg-2: #141110; --card: #1c1917; --card-hi: #231f1c; --text: #f5f5f4; --muted: #a8a29e;
   --line: #292524; --line-hi: #44403c; --amber: #fbbf24; --orange: #f97316; --red: #dc2626;
   --grad: linear-gradient(90deg, #fbbf24, #f97316 45%, #dc2626);
-  --code: #000000;
+  --code: #000000; --chip: #292524; --header: rgba(12, 10, 9, .85); --on-grad: #0c0a09;
+}
+/* Light: the same embers on warm paper. The terminals stay dark. */
+html.light {
+  --bg: #fafaf9; --bg-2: #f5f5f4; --card: #ffffff; --card-hi: #fffaf5; --text: #1c1917; --muted: #57534e;
+  --line: #e7e5e4; --line-hi: #d6d3d1; --amber: #b45309; --orange: #ea580c; --red: #b91c1c;
+  --grad: linear-gradient(90deg, #d97706, #ea580c 45%, #b91c1c);
+  --code: #0c0a09; --chip: #f5f5f4; --header: rgba(250, 250, 249, .85); --on-grad: #ffffff;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 a { color: var(--orange); text-decoration: none; }
-code { font: 0.9em "JetBrains Mono", monospace; background: #292524; padding: 1px 6px; border-radius: 5px; }
+code { font: 0.9em "JetBrains Mono", monospace; background: var(--chip); padding: 1px 6px; border-radius: 5px; }
 .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
 /* header */
-header { position: sticky; top: 0; z-index: 5; background: rgba(12,10,9,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+header { position: sticky; top: 0; z-index: 5; background: var(--header); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 nav { display: flex; align-items: center; gap: 28px; height: 64px; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; color: var(--text); }
 .brand img { width: 30px; height: 30px; }
 nav .links { display: flex; gap: 6px; margin-left: auto; font-size: 15px; }
 nav .links a { color: var(--muted); padding: 6px 12px; border-radius: 8px; transition: background .15s, color .15s; }
 nav .links a:hover { color: var(--text); background: var(--card); }
+.theme-btn { display: grid; place-items: center; width: 36px; height: 36px; margin-left: 4px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; transition: color .15s, border-color .15s; }
+.theme-btn:hover { color: var(--text); border-color: var(--line-hi); }
+.theme-btn svg { width: 18px; height: 18px; }
+html.dark .theme-btn .sun, html.light .theme-btn .moon { display: none; }
 
 /* hero */
 .hero { padding: 96px 0 80px; display: grid; grid-template-columns: 1.3fr .7fr; gap: 48px; align-items: center; }
-.pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--amber); border: 1px solid #44403c; background: var(--bg-2); padding: 5px 12px; border-radius: 999px; margin-bottom: 22px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--amber); border: 1px solid var(--line-hi); background: var(--bg-2); padding: 5px 12px; border-radius: 999px; margin-bottom: 22px; }
 .pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
 h1 { font-size: clamp(38px, 5.4vw, 60px); line-height: 1.05; letter-spacing: -.035em; margin: 0 0 22px; font-weight: 800; }
 .lead { font-size: 19px; color: var(--muted); max-width: 580px; margin: 0 0 34px; }
 .cta { display: flex; gap: 12px; flex-wrap: wrap; }
 .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 10px; font-weight: 700; font-size: 15px; border: 1px solid var(--line-hi); color: var(--text); background: var(--card); transition: transform .15s, border-color .15s; }
 .btn:hover { transform: translateY(-2px); border-color: var(--orange); }
-.btn.primary { background: var(--grad); border: 0; color: #0c0a09; }
+.btn.primary { background: var(--grad); border: 0; color: var(--on-grad); }
 .hero-mark img { width: min(320px, 100%); display: block; margin: 0 auto; }
 
 /* sections */
@@ -62,7 +73,7 @@ h2 { font-size: clamp(28px, 3.6vw, 38px); letter-spacing: -.025em; margin: 8px 0
   transition: transform .2s, border-color .2s, background .2s; width: 100%; }
 .card:hover { transform: translateY(-4px); border-color: var(--line-hi); background: var(--card-hi); }
 .card[aria-expanded="true"] { border-color: var(--orange); }
-.card .icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: #292524; margin-bottom: 18px; font-size: 22px; }
+.card .icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--chip); margin-bottom: 18px; font-size: 22px; }
 .card h3 { margin: 0 0 8px; font-size: 20px; }
 .card p { margin: 0; color: var(--muted); font-size: 15.5px; }
 .card .more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s; }
@@ -80,8 +91,8 @@ h2 { font-size: clamp(28px, 3.6vw, 38px); letter-spacing: -.025em; margin: 8px 0
 .step { display: flex; gap: 14px; align-items: flex-start; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; cursor: pointer; color: inherit; font: inherit; transition: border-color .2s, background .2s, transform .2s; }
 .step:hover { background: var(--card-hi); transform: translateX(4px); }
 .step[aria-selected="true"] { border-color: var(--orange); background: var(--card-hi); }
-.step .n { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font: 700 14px "JetBrains Mono", monospace; background: #292524; color: var(--muted); }
-.step[aria-selected="true"] .n { background: var(--grad); color: #0c0a09; }
+.step .n { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font: 700 14px "JetBrains Mono", monospace; background: var(--chip); color: var(--muted); }
+.step[aria-selected="true"] .n { background: var(--grad); color: var(--on-grad); }
 .step b { display: block; font-size: 16px; }
 .step span { color: var(--muted); font-size: 14px; }
 .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px; min-height: 100%; }
@@ -105,7 +116,7 @@ h2 { font-size: clamp(28px, 3.6vw, 38px); letter-spacing: -.025em; margin: 8px 0
 /* install */
 .install { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
 .copy { position: relative; }
-.copy button { position: absolute; top: 8px; right: 8px; background: #292524; color: var(--text); border: 1px solid var(--line-hi); border-radius: 8px; padding: 4px 10px; font: 600 12px Inter, sans-serif; cursor: pointer; }
+.copy button { position: absolute; top: 8px; right: 8px; background: #292524; color: #f5f5f4; border: 1px solid #44403c; border-radius: 8px; padding: 4px 10px; font: 600 12px Inter, sans-serif; cursor: pointer; }
 
 footer { border-top: 1px solid var(--line); padding: 36px 0; color: var(--muted); font-size: 14px; }
 footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
@@ -127,12 +138,26 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
   nav .links a.hide-sm { display: none; }
 }
 </style>
-<script>document.documentElement.classList.add('js');</script>
+<script>
+  document.documentElement.classList.add('js');
+  // Same key and rule as the docs pages, so the choice carries over.
+  (function () {
+    var t = 'dark';
+    try { t = localStorage.getItem('color-theme') || 'dark'; } catch (e) {}
+    if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.classList.add(t);
+    document.documentElement.style.colorScheme = t;
+  })();
+</script>
 </head>
 <body>
 <header><div class="wrap"><nav>
   <a class="brand" href="{{ "/" | relURL }}"><img src="{{ "images/logo.svg" | relURL }}" alt="">Tephra</a>
   <div class="links"><a href="{{ "docs/" | relURL }}">Docs</a><a class="hide-sm" href="{{ "rules/" | relURL }}">Rules</a><a href="{{ "results/" | relURL }}">Results</a><a href="https://github.com/tephrasec/tephra">GitHub</a></div>
+  <button class="theme-btn" type="button" aria-label="Switch between light and dark">
+    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+  </button>
 </nav></div></header>
 
 <main>
@@ -213,7 +238,7 @@ $ kill -9 $(pidof tephrad)
   <div class="stats">
     <a class="stat reveal" href="{{ "results/" | relURL }}"><b class="grad">22 / 22</b><span>attack scenarios detected</span><em>See the run →</em></a>
     <a class="stat reveal" href="{{ "results/" | relURL }}"><b class="grad">−2.3%</b><span>HTTP cost, a new connection per request, best case (was −16.7%)</span><em>What it measures →</em></a>
-    <a class="stat reveal" href="{{ "rules/" | relURL }}"><b class="grad">{{ len .Site.Data.rules }}</b><span>detection rules, each tested on recorded events</span><em>Browse the rules →</em></a>
+    <a class="stat reveal" href="{{ "rules/" | relURL }}"><b class="grad">{{ len hugo.Data.rules }}</b><span>detection rules, each tested on recorded events</span><em>Browse the rules →</em></a>
   </div>
 </div></section>
 
@@ -229,6 +254,12 @@ helm install tephra deploy/helm/tephra \
 <footer><div class="wrap"><span>Tephra · Apache-2.0</span><span><a href="{{ "docs/" | relURL }}">Docs</a> · <a href="{{ "rules/" | relURL }}">Rules</a> · <a href="{{ "results/" | relURL }}">Results</a> · <a href="{{ "docs/security/" | relURL }}">Security</a> · <a href="https://github.com/tephrasec/tephra">GitHub</a></span></div></footer>
 
 <script>
+  // Light and dark, stored where the docs pages look for it.
+  document.querySelector('.theme-btn').addEventListener('click', function () {
+    var h = document.documentElement, next = h.classList.contains('dark') ? 'light' : 'dark';
+    h.classList.remove('light', 'dark'); h.classList.add(next); h.style.colorScheme = next;
+    try { localStorage.setItem('color-theme', next); } catch (e) {}
+  });
   // Slide in once, as each box scrolls into view.
   var io = new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
