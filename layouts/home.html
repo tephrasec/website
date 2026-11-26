@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ .Site.Title }}: eBPF runtime security for Kubernetes</title>
+<meta name="description" content="{{ .Site.Params.description }}">
+<meta property="og:title" content="Tephra">
+<meta property="og:description" content="{{ .Site.Params.description }}">
+<meta property="og:image" content="{{ "images/logo.png" | absURL }}">
+<link rel="icon" href="{{ "favicon.svg" | relURL }}" type="image/svg+xml">
+<link rel="icon" href="{{ "favicon-32.png" | relURL }}" sizes="32x32">
+<link rel="apple-touch-icon" href="{{ "apple-touch-icon.png" | relURL }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0a09; --bg-2: #141110; --card: #1c1917; --card-hi: #231f1c; --text: #f5f5f4; --muted: #a8a29e;
+  --line: #292524; --line-hi: #44403c; --amber: #fbbf24; --orange: #f97316; --red: #dc2626;
+  --grad: linear-gradient(90deg, #fbbf24, #f97316 45%, #dc2626);
+  --code: #000000;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--orange); text-decoration: none; }
+code { font: 0.9em "JetBrains Mono", monospace; background: #292524; padding: 1px 6px; border-radius: 5px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* header */
+header { position: sticky; top: 0; z-index: 5; background: rgba(12,10,9,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+nav { display: flex; align-items: center; gap: 28px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; color: var(--text); }
+.brand img { width: 30px; height: 30px; }
+nav .links { display: flex; gap: 6px; margin-left: auto; font-size: 15px; }
+nav .links a { color: var(--muted); padding: 6px 12px; border-radius: 8px; transition: background .15s, color .15s; }
+nav .links a:hover { color: var(--text); background: var(--card); }
+
+/* hero */
+.hero { padding: 96px 0 80px; display: grid; grid-template-columns: 1.3fr .7fr; gap: 48px; align-items: center; }
+.pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--amber); border: 1px solid #44403c; background: var(--bg-2); padding: 5px 12px; border-radius: 999px; margin-bottom: 22px; }
+.pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
+h1 { font-size: clamp(38px, 5.4vw, 60px); line-height: 1.05; letter-spacing: -.035em; margin: 0 0 22px; font-weight: 800; }
+.lead { font-size: 19px; color: var(--muted); max-width: 580px; margin: 0 0 34px; }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 10px; font-weight: 700; font-size: 15px; border: 1px solid var(--line-hi); color: var(--text); background: var(--card); transition: transform .15s, border-color .15s; }
+.btn:hover { transform: translateY(-2px); border-color: var(--orange); }
+.btn.primary { background: var(--grad); border: 0; color: #0c0a09; }
+.hero-mark img { width: min(320px, 100%); display: block; margin: 0 auto; }
+
+/* sections */
+section { padding: 88px 0; }
+section.tint { background: var(--bg-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.kicker { font: 600 13px "JetBrains Mono", monospace; color: var(--orange); text-transform: uppercase; letter-spacing: .08em; }
+h2 { font-size: clamp(28px, 3.6vw, 38px); letter-spacing: -.025em; margin: 8px 0 12px; font-weight: 800; }
+.sub { color: var(--muted); max-width: 640px; margin: 0 0 40px; font-size: 18px; }
+
+/* clickable cards */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; cursor: pointer; text-align: left; color: inherit; font: inherit;
+  transition: transform .2s, border-color .2s, background .2s; width: 100%; }
+.card:hover { transform: translateY(-4px); border-color: var(--line-hi); background: var(--card-hi); }
+.card[aria-expanded="true"] { border-color: var(--orange); }
+.card .icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: #292524; margin-bottom: 18px; font-size: 22px; }
+.card h3 { margin: 0 0 8px; font-size: 20px; }
+.card p { margin: 0; color: var(--muted); font-size: 15.5px; }
+.card .more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s; }
+.card[aria-expanded="true"] .more { grid-template-rows: 1fr; }
+.card .more > div { overflow: hidden; }
+.card .more ul { margin: 16px 0 0; padding: 16px 0 0 18px; border-top: 1px solid var(--line); color: var(--text); font-size: 15px; }
+.card .more li { margin-bottom: 6px; }
+.card .hint { display: inline-block; margin-top: 16px; font-size: 13px; font-weight: 600; color: var(--orange); }
+.card[aria-expanded="true"] .hint::after { content: " ▲"; }
+.card[aria-expanded="false"] .hint::after { content: " ▼"; }
+
+/* hardened by default: step picker */
+.steps { display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
+.step-list { display: flex; flex-direction: column; gap: 10px; }
+.step { display: flex; gap: 14px; align-items: flex-start; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; cursor: pointer; color: inherit; font: inherit; transition: border-color .2s, background .2s, transform .2s; }
+.step:hover { background: var(--card-hi); transform: translateX(4px); }
+.step[aria-selected="true"] { border-color: var(--orange); background: var(--card-hi); }
+.step .n { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font: 700 14px "JetBrains Mono", monospace; background: #292524; color: var(--muted); }
+.step[aria-selected="true"] .n { background: var(--grad); color: #0c0a09; }
+.step b { display: block; font-size: 16px; }
+.step span { color: var(--muted); font-size: 14px; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px; min-height: 100%; }
+.panel h3 { margin: 0 0 10px; font-size: 22px; }
+.panel p { color: var(--muted); margin: 0 0 20px; }
+.term { background: var(--code); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.term .bar { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.term .bar .ex { margin-left: auto; font: 600 11px Inter, sans-serif; color: #78716c; text-transform: uppercase; letter-spacing: .06em; }
+.term .bar i { width: 10px; height: 10px; border-radius: 50%; background: #44403c; }
+.term pre { margin: 0; padding: 16px 18px; font: 13.5px/1.7 "JetBrains Mono", monospace; color: #e7e5e4; overflow-x: auto; }
+.term .c { color: #78716c; } .term .r { color: #f87171; } .term .o { color: var(--amber); } .term .g { color: #86efac; }
+
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.stat { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; color: inherit; transition: transform .2s, border-color .2s; }
+.stat:hover { transform: translateY(-4px); border-color: var(--orange); }
+.stat b { display: block; font-size: 44px; letter-spacing: -.03em; font-weight: 800; line-height: 1.1; margin-bottom: 6px; }
+.stat span { color: var(--muted); font-size: 15px; }
+.stat em { display: block; margin-top: 14px; font-style: normal; font-size: 13px; font-weight: 600; color: var(--orange); }
+
+/* install */
+.install { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+.copy { position: relative; }
+.copy button { position: absolute; top: 8px; right: 8px; background: #292524; color: var(--text); border: 1px solid var(--line-hi); border-radius: 8px; padding: 4px 10px; font: 600 12px Inter, sans-serif; cursor: pointer; }
+
+footer { border-top: 1px solid var(--line); padding: 36px 0; color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+/* Slide in once when scrolled into view. Without JS, or with reduced
+   motion, everything is simply there. */
+.js .reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
+.js .reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+  .card, .step, .stat, .btn, .card .more { transition: none; }
+}
+
+@media (max-width: 860px) {
+  .hero, .install, .steps { grid-template-columns: 1fr; }
+  .hero { padding: 56px 0 48px; }
+  .hero-mark { order: -1; } .hero-mark img { width: 150px; }
+  .cards, .stats { grid-template-columns: 1fr; }
+  nav .links a.hide-sm { display: none; }
+}
+</style>
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<header><div class="wrap"><nav>
+  <a class="brand" href="{{ "/" | relURL }}"><img src="{{ "images/logo.svg" | relURL }}" alt="">Tephra</a>
+  <div class="links"><a href="{{ "docs/" | relURL }}">Docs</a><a class="hide-sm" href="{{ "rules/" | relURL }}">Rules</a><a href="{{ "results/" | relURL }}">Results</a><a href="https://github.com/tephrasec/tephra">GitHub</a></div>
+</nav></div></header>
+
+<main>
+<div class="wrap hero">
+  <div class="reveal">
+    <span class="pill"><i></i>eBPF runtime security for Kubernetes</span>
+    <h1>A sensor that stays on guard <span class="grad">when someone tries to blind it.</span></h1>
+    <p class="lead">Tephra watches every pod from the kernel, alerts on what attackers do, and can refuse it. Kill it, freeze it or flood it, and the kernel keeps refusing the moves that come next.</p>
+    <div class="cta"><a class="btn primary" href="{{ "docs/getting-started/" | relURL }}">Get started →</a><a class="btn" href="#how">See how it holds up</a></div>
+  </div>
+  <div class="hero-mark reveal"><img src="{{ "images/logo.svg" | relURL }}" alt="Tephra logo: a radar sweep over a cluster of pods inside a shield"></div>
+</div>
+
+<section class="tint" id="rules"><div class="wrap">
+  <div class="reveal"><span class="kicker">What it does</span><h2>Detect. Refuse. Prove.</h2>
+  <p class="sub">Click a card for the details.</p></div>
+  <div class="cards">
+    <button class="card reveal" aria-expanded="false">
+      <div class="icon">◉</div><h3>Detect from the kernel</h3>
+      <p>eBPF sees process starts, file opens, connections and privilege changes in every pod.</p>
+      <div class="more"><div><ul><li>37 rules, mapped to MITRE ATT&amp;CK</li><li>Programs, files and pods recognised by identity, not by name</li><li>Every rule tested on recorded events</li></ul></div></div>
+      <span class="hint">Details</span>
+    </button>
+    <button class="card reveal" aria-expanded="false">
+      <div class="icon">⛨</div><h3>Refuse in the kernel</h3>
+      <p>Rules can block with BPF LSM, per pod, starting in dry-run.</p>
+      <div class="more"><div><ul><li>Opt-in per pod with a label</li><li>Refusals stay in force while the agent restarts</li><li>Blind mode refuses attacker moves for every pod while the agent is down</li></ul></div></div>
+      <span class="hint">Details</span>
+    </button>
+    <button class="card reveal" aria-expanded="false">
+      <div class="icon">✓</div><h3>Prove it in public</h3>
+      <p>Every claim has a run behind it, raw results included.</p>
+      <div class="more"><div><ul><li>Attack scenarios on real clusters</li><li>Evasions written and committed before the fix they test</li><li>What each result proves, and what it does not</li></ul></div></div>
+      <span class="hint">Details</span>
+    </button>
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="reveal"><span class="kicker">Hardened by default</span><h2>What happens when an attacker kills the sensor</h2>
+  <p class="sub">The first thing an attacker on a node does is blind the sensor. Step through it.</p></div>
+  <div class="steps reveal">
+    <div class="step-list" role="tablist">
+      <button class="step" role="tab" aria-selected="true" data-s="0"><span class="n">1</span><div><b>The kill is recorded</b><span>A buffer of its own for attacks on the agent</span></div></button>
+      <button class="step" role="tab" aria-selected="false" data-s="1"><span class="n">2</span><div><b>The kernel keeps recording</b><span>Detection stays pinned across the restart</span></div></button>
+      <button class="step" role="tab" aria-selected="false" data-s="2"><span class="n">3</span><div><b>The next move is refused</b><span>Blind mode, on by default</span></div></button>
+      <button class="step" role="tab" aria-selected="false" data-s="3"><span class="n">4</span><div><b>A flood leaves counts</b><span>Not silent gaps</span></div></button>
+    </div>
+    <div class="panel" role="tabpanel">
+      <div data-p="0"><h3>The kill is recorded</h3><p>A signal to the agent goes to a ring buffer that nothing else writes to, so a flood cannot push it out. The next agent raises R030 with the sender and its pod.</p>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">example output</span></div><pre><span class="c"># attacker, in a pod with the host's PIDs</span>
+$ kill -9 $(pidof tephrad)
+
+<span class="c"># the next agent, seconds later</span>
+<span class="r">R030</span> critical  signal to the Tephra agent
+     sender: /bin/busybox kill -9 3121
+     pod:    shop/web-7c9d8-xk2lp</pre></div></div>
+      <div data-p="1" hidden><h3>The kernel keeps recording</h3><p>The detection programs and their buffer are pinned in the kernel. While no agent runs they keep recording, and the next agent reads what happened meanwhile. A stop by Kubernetes removes the pins: an upgrade leaves nothing behind.</p>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">example output</span></div><pre><span class="c"># agent killed at 12:00:03, back at 12:00:14</span>
+<span class="o">replayed</span>  4 records from while it was down
+<span class="o">alert</span>     R005 /etc/shadow read  12:00:06  dd</pre></div></div>
+      <div data-p="2" hidden><h3>The next move is refused</h3><p>Once the agent is gone, stopped or silent for 12 seconds, the kernel refuses a short list of moves in every pod: reading <code>/etc/shadow</code>, writing <code>ld.so.preload</code> or <code>authorized_keys</code>, loading a module, mounting, ptrace, running a deleted binary. Each refusal raises R038 when the agent is back.</p>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">example output</span></div><pre>$ dd if=/etc/shadow of=/dev/null
+<span class="r">dd: failed to open '/etc/shadow': Operation not permitted</span>
+
+<span class="r">R038</span> critical  refused while the sensor was blind
+     file_read /etc/shadow  by /bin/dd</pre></div></div>
+      <div data-p="3" hidden><h3>A flood leaves counts, not gaps</h3><p>Under pressure the kernel sends the first open of each file by each program in each pod, and counts the rest. A flood can no longer push the one record that matters out of the buffer.</p>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span class="ex">example output</span></div><pre><span class="g">file_summary</span>  /etc/shadow  by /bin/cat  in shop/web
+              <span class="o">count 54,812</span>  12:00:01 → 12:00:11</pre></div></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="tint" id="results"><div class="wrap">
+  <div class="reveal"><span class="kicker">Measured, not claimed</span><h2>Results from the lab</h2>
+  <p class="sub">Linux 5.15, the oldest kernel Tephra supports. Each number links to its run.</p></div>
+  <div class="stats">
+    <a class="stat reveal" href="{{ "results/" | relURL }}"><b class="grad">22 / 22</b><span>attack scenarios detected</span><em>See the run →</em></a>
+    <a class="stat reveal" href="{{ "results/" | relURL }}"><b class="grad">−2.3%</b><span>HTTP cost, a new connection per request, best case (was −16.7%)</span><em>What it measures →</em></a>
+    <a class="stat reveal" href="{{ "rules/" | relURL }}"><b class="grad">{{ len .Site.Data.rules }}</b><span>detection rules, each tested on recorded events</span><em>Browse the rules →</em></a>
+  </div>
+</div></section>
+
+<section id="install"><div class="wrap install">
+  <div class="reveal"><span class="kicker">Get started</span><h2>One Helm chart</h2><p class="sub" style="margin:0">Detection, blind mode and the dashboards. Enforcement stays off until you turn it on. From v0.2.0 the chart is also an OCI package on GHCR.</p></div>
+  <div class="copy reveal"><div class="term"><div class="bar"><i></i><i></i><i></i></div><pre>git clone https://github.com/tephrasec/tephra
+cd tephra
+helm install tephra deploy/helm/tephra \
+  -n tephra --create-namespace</pre></div><button type="button">Copy</button></div>
+</div></section>
+</main>
+
+<footer><div class="wrap"><span>Tephra · Apache-2.0</span><span><a href="{{ "docs/" | relURL }}">Docs</a> · <a href="{{ "rules/" | relURL }}">Rules</a> · <a href="{{ "results/" | relURL }}">Results</a> · <a href="{{ "docs/security/" | relURL }}">Security</a> · <a href="https://github.com/tephrasec/tephra">GitHub</a></span></div></footer>
+
+<script>
+  // Slide in once, as each box scrolls into view.
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(function (el, i) {
+    el.style.transitionDelay = (el.parentElement.querySelectorAll('.reveal').length > 1 ? (Array.prototype.indexOf.call(el.parentElement.children, el) % 3) * 90 : 0) + 'ms';
+    io.observe(el);
+  });
+  // Cards open and close on click.
+  document.querySelectorAll('.card').forEach(function (c) {
+    c.addEventListener('click', function () { c.setAttribute('aria-expanded', c.getAttribute('aria-expanded') !== 'true'); });
+  });
+  // The step picker.
+  document.querySelectorAll('.step').forEach(function (s) {
+    s.addEventListener('click', function () {
+      document.querySelectorAll('.step').forEach(function (x) { x.setAttribute('aria-selected', x === s); });
+      document.querySelectorAll('.panel [data-p]').forEach(function (p) { p.hidden = p.dataset.p !== s.dataset.s; });
+    });
+  });
+  // Copy the install command.
+  document.querySelector('.copy button').addEventListener('click', function (ev) {
+    var b = ev.currentTarget;
+    navigator.clipboard.writeText(b.parentElement.querySelector('pre').innerText).then(function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{{ define "main" }}
+  <div class="hx:mx-auto hx:flex hextra-max-page-width">
+    <article class="hx:w-full hx:break-words hx:flex hx:min-w-0 hx:justify-center hx:pb-8">
+      <main id="content" class="hx:w-full hx:min-w-0 hx:px-6 hx:pt-4 hx:md:px-12 rules-page">
+        <div class="content">
+          <h1>Rules</h1>
+          <p>Every rule Tephra ships, generated from <a href="https://github.com/tephrasec/tephra/tree/main/rules">rules/</a>. Each one is tested on recorded events it must and must not fire on. Click a rule for its description and known false positives.</p>
+        </div>
+        <div class="rules-tools">
+          <input id="rule-filter" type="search" placeholder="Filter by ID, title, tactic or technique" aria-label="Filter rules">
+          <div class="rules-levels" role="group" aria-label="Level">
+            {{ range slice "all" "critical" "high" "medium" "low" }}<button type="button" data-level="{{ . }}"{{ if eq . "all" }} class="on"{{ end }}>{{ . }}</button>{{ end }}
+          </div>
+        </div>
+        <div class="rules-list">
+          {{ range .Site.Data.rules }}
+          <details class="rule" data-level="{{ .level }}" data-text="{{ lower (printf "%s %s %s %s" .id .title (delimit .tactics " ") (delimit .techniques " ")) }}">
+            <summary>
+              <span class="rule-id">{{ .id }}</span>
+              <span class="rule-title">{{ .title }}</span>
+              <span class="rule-level lvl-{{ .level }}">{{ .level }}</span>
+              {{ if eq .action "block" }}<span class="rule-block" title="Can refuse what it detects">blocks</span>{{ end }}
+            </summary>
+            <div class="rule-body">
+              <p>{{ .description }}</p>
+              <dl>
+                <dt>Event</dt><dd><code>{{ .event }}</code></dd>
+                <dt>ATT&amp;CK</dt><dd>{{ delimit .tactics ", " }}{{ with .techniques }} · {{ range $i, $t := . }}{{ if $i }}, {{ end }}<a href="https://attack.mitre.org/techniques/{{ replace $t "." "/" }}/">{{ $t }}</a>{{ end }}{{ end }}</dd>
+                {{ with .falsepositives }}<dt>False positives</dt><dd><ul>{{ range . }}<li>{{ . }}</li>{{ end }}</ul></dd>{{ end }}
+                <dt>Source</dt><dd><a href="https://github.com/tephrasec/tephra/blob/main/{{ .file }}">{{ .file }}</a></dd>
+              </dl>
+            </div>
+          </details>
+          {{ end }}
+        </div>
+        <p id="rules-none" hidden>No rule matches.</p>
+      </main>
+    </article>
+  </div>
+  <script>
+    (function () {
+      var q = document.getElementById('rule-filter'), level = 'all';
+      function apply() {
+        var t = q.value.trim().toLowerCase(), shown = 0;
+        document.querySelectorAll('.rule').forEach(function (r) {
+          var ok = (level === 'all' || r.dataset.level === level) && (!t || r.dataset.text.indexOf(t) >= 0);
+          r.hidden = !ok; if (ok) shown++;
+        });
+        document.getElementById('rules-none').hidden = shown > 0;
+      }
+      q.addEventListener('input', apply);
+      document.querySelectorAll('.rules-levels button').forEach(function (b) {
+        b.addEventListener('click', function () {
+          level = b.dataset.level;
+          document.querySelectorAll('.rules-levels button').forEach(function (x) { x.classList.toggle('on', x === b); });
+          apply();
+        });
+      });
+    })();
+  </script>
+{{ end }}

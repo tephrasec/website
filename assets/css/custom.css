@@ -1,0 +1,37 @@
+/* Tephra's Ember palette on the docs pages. No pointer effects, no motion
+   behind the text. */
+:root {
+  --primary-hue: 25deg;
+  --primary-saturation: 95%;
+  --primary-lightness: 53%;
+}
+html.dark body, html.dark .hextra-nav-container-blur, html.dark footer { background-color: #0c0a09 !important; }
+html.dark .hextra-sidebar-container { background-color: #0c0a09; }
+html.dark pre, html.dark .hextra-code-block pre { background-color: #000 !important; }
+html.dark article code:not(pre code) { background: #292524; }
+.content h1, .content h2 { letter-spacing: -0.02em; }
+
+/* Rules page */
+.rules-page { max-width: 980px; }
+.rules-tools { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0 18px; }
+#rule-filter { flex: 1 1 280px; padding: 10px 14px; border-radius: 10px; border: 1px solid #44403c; background: transparent; color: inherit; font: inherit; }
+.rules-levels { display: flex; gap: 6px; }
+.rules-levels button { padding: 8px 12px; border-radius: 8px; border: 1px solid #44403c; background: transparent; color: inherit; cursor: pointer; text-transform: capitalize; font-size: 14px; }
+.rules-levels button.on { background: linear-gradient(90deg, #fbbf24, #f97316 45%, #dc2626); color: #0c0a09; border-color: transparent; font-weight: 700; }
+.rules-list { display: flex; flex-direction: column; gap: 10px; }
+.rule { border: 1px solid #292524; border-radius: 12px; background: rgba(28, 25, 23, .6); transition: border-color .15s; }
+html:not(.dark) .rule { background: #fafaf9; border-color: #e7e5e4; }
+.rule:hover, .rule[open] { border-color: #f97316; }
+.rule summary { display: flex; align-items: center; gap: 14px; padding: 14px 18px; cursor: pointer; list-style: none; }
+.rule summary::-webkit-details-marker { display: none; }
+.rule-id { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; color: #f97316; min-width: 3.5em; }
+.rule-title { flex: 1; font-weight: 600; }
+.rule-level, .rule-block { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+.lvl-critical { background: #7f1d1d; color: #fecaca; } .lvl-high { background: #7c2d12; color: #fed7aa; }
+.lvl-medium { background: #713f12; color: #fde68a; } .lvl-low, .lvl-info { background: #292524; color: #d6d3d1; }
+.rule-block { border: 1px solid #f97316; color: #f97316; }
+.rule-body { padding: 0 18px 16px; border-top: 1px solid #292524; }
+.rule-body p { margin: 14px 0; }
+.rule-body dl { display: grid; grid-template-columns: 140px 1fr; gap: 6px 16px; margin: 0; font-size: 15px; }
+.rule-body dt { color: #a8a29e; } .rule-body dd { margin: 0; } .rule-body ul { margin: 0; padding-left: 18px; }
+@media (max-width: 640px) { .rule-body dl { grid-template-columns: 1fr; } .rule summary { flex-wrap: wrap; } }
